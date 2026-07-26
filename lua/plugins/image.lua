@@ -7,7 +7,7 @@ return {
   end,
   opts = {
     -- WezTerm implements Kitty's graphics protocol. Tmux passthrough is already
-    -- enabled in ~/.tmux.conf, which is required when running inside tmux.
+    -- enabled in ~/.config/tmux/tmux.conf, which is required when running inside tmux.
     backend = 'kitty',
     processor = 'magick_cli',
     integrations = {
