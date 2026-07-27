@@ -178,13 +178,34 @@ return {
 
     local sources = {
       diagnostics.checkmake,
-      formatting.prettier.with { filetypes = { 'html', 'json', 'yaml', 'markdown', 'js', 'ts', 'tsx' } },
+      formatting.prettier.with {
+        filetypes = { 'html', 'json', 'yaml', 'markdown', 'js', 'javascriptreact', 'ts', 'tsx', 'typescriptreact' },
+      },
       formatting.stylua,
       formatting.shfmt.with { args = { '-i', '4' } },
       formatting.terraform_fmt,
       require('none-ls.formatting.ruff').with { extra_args = { '--extend-select', 'I' } },
       require 'none-ls.formatting.ruff_format',
     }
+
+    local function fix_eslint(bufnr)
+      local eslint_clients = vim.lsp.get_clients { bufnr = bufnr, name = 'eslint' }
+      local client = eslint_clients[1]
+
+      if not client then
+        return
+      end
+
+      client:request_sync('workspace/executeCommand', {
+        command = 'eslint.applyAllFixes',
+        arguments = {
+          {
+            uri = vim.uri_from_bufnr(bufnr),
+            version = vim.lsp.util.buf_versions[bufnr],
+          },
+        },
+      }, 1000, bufnr)
+    end
 
     local augroup = vim.api.nvim_create_augroup('LspFormatting', {})
     null_ls.setup {
@@ -201,7 +222,14 @@ return {
               if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
                 return
               end
-              vim.lsp.buf.format { async = false }
+
+              fix_eslint(bufnr)
+              vim.lsp.buf.format {
+                async = false,
+                filter = function(format_client)
+                  return format_client.name == 'null-ls' or format_client.name == 'none-ls'
+                end,
+              }
             end,
           })
         end
