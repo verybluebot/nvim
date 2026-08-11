@@ -1,7 +1,6 @@
 return { -- Fuzzy Finder (files, lsp, etc)
   'nvim-telescope/telescope.nvim',
   event = 'VimEnter',
-  branch = '0.1.x',
   dependencies = {
     'nvim-lua/plenary.nvim',
     { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -88,51 +87,54 @@ return { -- Fuzzy Finder (files, lsp, etc)
     -- See `:help telescope.builtin`
     local builtin = require 'telescope.builtin'
     local previewers = require 'telescope.previewers'
-    local image = require 'image'
+    local has_image, image = pcall(require, 'image')
 
     -- Keep image discovery separate from the normal file picker so rendering
-    -- previews cannot slow down regular fuzzy file search.
-    local image_previewer = previewers.new_buffer_previewer {
-      title = 'Image Preview',
-      get_buffer_by_name = function(_, entry)
-        return entry.path
-      end,
-      define_preview = function(self, entry, status)
-        if self.state.image then
-          self.state.image:clear()
-        end
+    -- previews cannot slow down regular fuzzy file search. image.nvim is
+    -- intentionally unavailable in headless sessions.
+    if has_image then
+      local image_previewer = previewers.new_buffer_previewer {
+        title = 'Image Preview',
+        get_buffer_by_name = function(_, entry)
+          return entry.path
+        end,
+        define_preview = function(self, entry, status)
+          if self.state.image then
+            self.state.image:clear()
+          end
 
-        vim.bo[self.state.bufnr].modifiable = true
-        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, {})
-        vim.bo[self.state.bufnr].modifiable = false
-        self.state.image = image.from_file(entry.path, {
-          window = status.preview_win,
-          buffer = self.state.bufnr,
-        })
-        if self.state.image then
-          self.state.image:render()
-        end
-      end,
-      teardown = function(self)
-        if self.state and self.state.image then
-          self.state.image:clear()
-          self.state.image = nil
-        end
-      end,
-    }
-
-    vim.keymap.set('n', '<leader>si', function()
-      builtin.find_files {
-        prompt_title = 'Images',
-        find_command = {
-          'rg', '--files', '--hidden', '--color', 'never',
-          '-g', '!.git', '-g', '*.png', '-g', '*.jpg', '-g', '*.jpeg',
-          '-g', '*.gif', '-g', '*.webp', '-g', '*.avif',
-        },
-        sorter = require('telescope.sorters').get_generic_fuzzy_sorter(),
-        previewer = image_previewer,
+          vim.bo[self.state.bufnr].modifiable = true
+          vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, {})
+          vim.bo[self.state.bufnr].modifiable = false
+          self.state.image = image.from_file(entry.path, {
+            window = status.preview_win,
+            buffer = self.state.bufnr,
+          })
+          if self.state.image then
+            self.state.image:render()
+          end
+        end,
+        teardown = function(self)
+          if self.state and self.state.image then
+            self.state.image:clear()
+            self.state.image = nil
+          end
+        end,
       }
-    end, { desc = '[S]earch [I]mages' })
+
+      vim.keymap.set('n', '<leader>si', function()
+        builtin.find_files {
+          prompt_title = 'Images',
+          find_command = {
+            'rg', '--files', '--hidden', '--color', 'never',
+            '-g', '!.git', '-g', '*.png', '-g', '*.jpg', '-g', '*.jpeg',
+            '-g', '*.gif', '-g', '*.webp', '-g', '*.avif',
+          },
+          sorter = require('telescope.sorters').get_generic_fuzzy_sorter(),
+          previewer = image_previewer,
+        }
+      end, { desc = '[S]earch [I]mages' })
+    end
     vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
     vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
     vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })

@@ -167,17 +167,21 @@ return {
     -- Formatters & linters for mason to install
     require('mason-null-ls').setup {
       ensure_installed = {
-        'prettier',  -- ts/js formatter
-        'stylua',    -- lua formatter
-        'shfmt',     -- Shell formatter
-        'checkmake', -- linter for Makefiles
-        'ruff',      -- Python linter and formatter
+        'prettier',     -- ts/js formatter
+        'stylua',       -- lua formatter
+        'shfmt',        -- Shell formatter
+        'checkmake',    -- linter for Makefiles
+        'ruff',         -- Python linter and formatter
+        'clang-format', -- C, C++, Objective-C, and Objective-C++ formatter
       },
       automatic_installation = true,
     }
 
     local sources = {
       diagnostics.checkmake,
+      formatting.clang_format.with {
+        filetypes = { 'c', 'cpp', 'objc', 'objcpp' },
+      },
       formatting.prettier.with {
         filetypes = { 'html', 'json', 'yaml', 'markdown', 'js', 'javascriptreact', 'ts', 'tsx', 'typescriptreact' },
       },
@@ -213,7 +217,7 @@ return {
       sources = sources,
       -- you can reuse a shared lspconfig on_attach callback here
       on_attach = function(client, bufnr)
-        if client.supports_method 'textDocument/formatting' then
+        if client:supports_method 'textDocument/formatting' then
           vim.api.nvim_clear_autocmds { group = augroup, buffer = bufnr }
           vim.api.nvim_create_autocmd('BufWritePre', {
             group = augroup,

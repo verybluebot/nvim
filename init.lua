@@ -17,7 +17,7 @@ vim.opt.rtp:prepend(lazypath)
 --
 --  To update plugins you can run
 --    :Lazy update
-require('lazy').setup {
+require('lazy').setup({
   require 'plugins.colortheme',
   require 'plugins.tree',
   require 'plugins.bufferline',
@@ -27,6 +27,8 @@ require('lazy').setup {
   require 'plugins.lsp',
   require 'plugins.autocomplete',
   require 'plugins.autoformating',
+  require 'plugins.dap',
+  require 'plugins.cmake',
   require 'plugins.gitsigns',
   require 'plugins.diffview',
   require 'plugins.alpha',
@@ -37,7 +39,9 @@ require('lazy').setup {
   require 'plugins.autotag',
   require 'plugins.handlebars',
   require 'plugins.image',
-}
+}, {
+  rocks = { enabled = false },
+})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
