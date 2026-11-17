@@ -1,3 +1,5 @@
+vim.opt.exrc = true
+
 require 'core.options'
 require 'core.keymaps'
 require 'core.snipets'

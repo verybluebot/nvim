@@ -208,7 +208,17 @@ return {
         },
       },
       html = { filetypes = { 'html', 'twig', 'hbs' } },
-      cssls = {},
+      cssls = {
+        on_init = function(client)
+          local root = client.config.root_dir
+          if root and vim.uv.fs_stat(root .. '/node_modules/tailwindcss/package.json') then
+            -- One positional JSON-RPC argument containing the URI list.
+            client:notify('css/customDataChanged', {
+              { vim.uri_from_fname(vim.fn.stdpath('config') .. '/css/tailwind.json') },
+            })
+          end
+        end,
+      },
       tailwindcss = {},
       dockerls = {},
       sqlls = {},

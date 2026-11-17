@@ -183,7 +183,7 @@ return {
         filetypes = { 'c', 'cpp', 'objc', 'objcpp' },
       },
       formatting.prettier.with {
-        filetypes = { 'html', 'json', 'yaml', 'markdown', 'js', 'javascriptreact', 'ts', 'tsx', 'typescriptreact' },
+        filetypes = { 'html', 'json', 'yaml', 'markdown', 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
       },
       formatting.stylua,
       formatting.shfmt.with { args = { '-i', '4' } },
